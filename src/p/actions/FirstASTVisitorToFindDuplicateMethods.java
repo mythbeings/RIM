@@ -3,6 +3,7 @@ package p.actions;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.lang.reflect.Parameter;
+import java.lang.reflect.Type;
 import java.lang.reflect.TypeVariable;
 import java.util.List;
 import java.util.Set;
@@ -57,7 +58,7 @@ public class FirstASTVisitorToFindDuplicateMethods extends ASTVisitor {
 					        }
 
 
-					collectAllduplicatemethodsInParents(m, methodset);
+					collectAllduplicatemethodsInParents(type, methodset);
 				}
 			}			
 		}
@@ -68,50 +69,61 @@ public class FirstASTVisitorToFindDuplicateMethods extends ASTVisitor {
 		return true;
 	}
 
-	void collectAllduplicatemethodsInParents(MethodDeclaration m, Set methodset) {
+	void collectAllduplicatemethodsInParents(TypeDeclaration m, Set methodset) {
 		Interfacesearch(m, methodset);
 		Superclasssearch(m, methodset);
 	}
 
-	void Superclasssearch(MethodDeclaration node, Set methodSet) {
+	void Superclasssearch(TypeDeclaration node, Set methodSet) {
 
 		if (node.getParent() != null) {
-			RMethod m = findDuplicateMethodPM(node, methodSet);
-			if (m != null) {
-				methodSet.add(m);
+			
+			Boolean m = findDuplicateMethodPM(node, methodSet);
+			if (m == true) {
+				methodSet.add(node);
 			}
-			ASTNode parent = node.getParent();
-			collectAllduplicatemethodsInParents((MethodDeclaration) parent, methodset);
+			Type parent = (Type) node.getSuperclassType();
+			collectAllduplicatemethodsInParents((TypeDeclaration) parent, methodset);
 		}
 	}
 
-	void Interfacesearch(MethodDeclaration node, Set methodSet) {
+	void Interfacesearch(TypeDeclaration node, Set methodSet) {
+		
 	/*	For each interface in origin.getInterfaces()
 		RMethod m = findDuplicateMethod(interface)
 		if (m != null) methodSet.add(m)
 		Interfacesearch(interface, methodSet) 	
 		*/	
-		//Need to use getInterfaces
-		//getInterfaces is used by type or class
-	/*	int i;
-		Class[] interfaces = node.getClass().getInterfaces();  //this is java reflection, which you cannot use here...
-																//what should be used instead?
-		for (i = 0; i < interfaces.length; i++) {
-			Method[] methods;
-			Class interfacecheck = interfaces[i];
-			methods = interfaces[i].getMethods();
-			RMethod m = findDuplicateMethodPM(methods, methodSet); // need to find a way to send interface FDM -- should one
-																// for classes be made?
-			if (m != null)
-				methodSet.add(m);
-			Interfacesearch(interfacecheck, methodSet); // can a class be turned into a methoddeclaration to fix this error?
-		}*/
-	}
+
+		ITypeBinding[] passon = node.resolveBinding().getInterfaces();
+		for(ITypeBinding t : node.resolveBinding().getInterfaces()) {
+		            for(IMethodBinding n : t.getDeclaredMethods()) {
+		                if (n.getName().compareTo(target.getName()) == 0);{
+		                ITypeBinding[] parameterList = n.getParameterTypes();
+		                int i = 0;
+						for(String parameterType : target.getParameterTypes()) {				
+							SingleVariableDeclaration p = (SingleVariableDeclaration)parameterList[i];						
+							if(p.getType().resolveBinding().getQualifiedName().compareTo(parameterType) != 0)
+								break;
+							i++;
+						}
+						if(i == target.getParameterTypes().length) {
+							methodset.add(n.getName());
+						}
+		                }
+		            }
+		            TypeDeclaration next = (TypeDeclaration) t.getTypeDeclaration();
+					Interfacesearch(next, methodSet);
+		        }
+		 // can a class be turned into a methoddeclaration to fix this error?
+		}
 
 
-	public RMethod findDuplicateMethodPM(MethodDeclaration node, Set methodSet2) {
-			if(node.getName().getIdentifier().compareTo(target.getName()) == 0) { 
-				List parameterList = node.parameters();
+	public Boolean findDuplicateMethodPM(TypeDeclaration node, Set methodSet2) {
+		MethodDeclaration[] methods = node.getMethods();
+		for(MethodDeclaration m : methods) {
+			if(m.getName().getIdentifier().compareTo(target.getName()) == 0) { 
+				List parameterList = m.parameters();
 				int i = 0;
 				for(String parameterType : target.getParameterTypes()) {				
 					SingleVariableDeclaration p = (SingleVariableDeclaration)parameterList.get(i);						
@@ -120,11 +132,10 @@ public class FirstASTVisitorToFindDuplicateMethods extends ASTVisitor {
 					i++;
 				}
 				if(i == target.getParameterTypes().length) {						
-					//return ;    //an RMethod requires something returned (other than null if the node is to be added to the set). 
-								  //What would qualify?
-				}
+					return true;
 	}
-		// TODO Auto-generated method stub
-		return null;
+}
+		}
+		return false;
 	}
 }
