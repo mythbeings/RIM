@@ -21,6 +21,7 @@ public class SecondASTVisitorToFindDuplicateMethods extends ASTVisitor {
 	public boolean visit(TypeDeclaration node) {
 		findDuplicate(node);
 
+		
 		return true;
 	}
 

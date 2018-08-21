@@ -216,6 +216,7 @@ public class RunAction implements IWorkbenchWindowActionDelegate {
 						CompilationUnit compilationUnit = (CompilationUnit) astParser.createAST(null);						
 						compilationUnit.accept(astVisitor);				
 						compilationUnit.accept(new FirstASTVisitorToFindDuplicateMethods(target));
+						
 						compilationUnit.accept(new SecondASTVisitorToFindDuplicateMethods(target));
 
 					}

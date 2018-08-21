@@ -31,6 +31,7 @@ public class FirstASTVisitorToFindDuplicateMethods extends ASTVisitor {
 		//if(type.isInterface() == true)
 		//	return true;
 		
+		
 		MethodDeclaration[] methods = type.getMethods();
 		for(MethodDeclaration m : methods) {
 			if(m.getName().getIdentifier().compareTo(target.getName()) == 0) { 
