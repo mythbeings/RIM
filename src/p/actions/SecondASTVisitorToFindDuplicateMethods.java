@@ -42,16 +42,19 @@ public class SecondASTVisitorToFindDuplicateMethods extends ASTVisitor {
 	public Boolean isDuplicateMethod(TypeDeclaration node, Set methodSet2) {
 		MethodDeclaration[] methods = node.getMethods();
 		for(MethodDeclaration m : methods) {
+			System.out.println(m.getName());//For the print test
 			if(m.getName().getIdentifier().compareTo(target.getName()) == 0) { 
 				List parameterList = m.parameters();
 				int i = 0;
-				for(String parameterType : target.getParameterTypes()) {				
+				for(String parameterType : target.getParameterTypes()) {
+					System.out.print(parameterType + " "); //For the print test
 					SingleVariableDeclaration p = (SingleVariableDeclaration)parameterList.get(i);						
 					if(p.getType().resolveBinding().getQualifiedName().compareTo(parameterType) != 0)
 						break;
 					i++;
 				}
 				if(i == target.getParameterTypes().length) {
+					System.out.print("***");//For the print test
 					methodSet2.add(m);
 					return true;
 	}

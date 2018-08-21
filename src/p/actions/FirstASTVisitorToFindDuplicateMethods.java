@@ -49,14 +49,14 @@ public class FirstASTVisitorToFindDuplicateMethods extends ASTVisitor {
 					methodset.add(m);
 					
 					//code from the email -- should it have its own method?
-					ITypeBinding[] passon = type.resolveBinding().getInterfaces();
+					/*ITypeBinding[] passon = type.resolveBinding().getInterfaces();
 					for(ITypeBinding t : type.resolveBinding().getInterfaces()) {
 					            for(IMethodBinding n : t.getDeclaredMethods()) {
 					                n.getName();
 					                n.getParameterTypes();
 					            }
 					        }
-
+*/
 
 					collectAllduplicatemethodsInParents(type, methodset);
 				}
@@ -98,16 +98,19 @@ public class FirstASTVisitorToFindDuplicateMethods extends ASTVisitor {
 		ITypeBinding[] passon = node.resolveBinding().getInterfaces();
 		for(ITypeBinding t : node.resolveBinding().getInterfaces()) {
 		            for(IMethodBinding n : t.getDeclaredMethods()) {
+		    			System.out.println(n.getName());//For the print test
 		                if (n.getName().compareTo(target.getName()) == 0);{
 		                ITypeBinding[] parameterList = n.getParameterTypes();
 		                int i = 0;
-						for(String parameterType : target.getParameterTypes()) {				
+						for(String parameterType : target.getParameterTypes()) {	
+							System.out.print(parameterType + " "); //For the print test
 							SingleVariableDeclaration p = (SingleVariableDeclaration)parameterList[i];						
 							if(p.getType().resolveBinding().getQualifiedName().compareTo(parameterType) != 0)
 								break;
 							i++;
 						}
 						if(i == target.getParameterTypes().length) {
+							System.out.print("***");//For the print test
 							methodset.add(n.getName());
 						}
 		                }
@@ -122,16 +125,20 @@ public class FirstASTVisitorToFindDuplicateMethods extends ASTVisitor {
 	public Boolean findDuplicateMethodPM(TypeDeclaration node, Set methodSet2) {
 		MethodDeclaration[] methods = node.getMethods();
 		for(MethodDeclaration m : methods) {
+			System.out.println(m.getName());//For the print test
 			if(m.getName().getIdentifier().compareTo(target.getName()) == 0) { 
 				List parameterList = m.parameters();
 				int i = 0;
-				for(String parameterType : target.getParameterTypes()) {				
+				for(String parameterType : target.getParameterTypes()) {
+					System.out.print(parameterType + " "); //For the print test
 					SingleVariableDeclaration p = (SingleVariableDeclaration)parameterList.get(i);						
 					if(p.getType().resolveBinding().getQualifiedName().compareTo(parameterType) != 0)
 						break;
 					i++;
 				}
-				if(i == target.getParameterTypes().length) {						
+				if(i == target.getParameterTypes().length) {
+					System.out.print("***");//For the print test
+					methodSet2.add(m);
 					return true;
 	}
 }

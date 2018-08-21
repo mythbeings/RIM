@@ -161,7 +161,6 @@ public class RunAction implements IWorkbenchWindowActionDelegate {
 						
 						//two visitors for checking duplicate methods
 						
-						compilationUnit.accept(new SecondASTVisitorToFindDuplicateMethods());
 					}
 				}
 			} catch (JavaModelException e) {
@@ -217,6 +216,8 @@ public class RunAction implements IWorkbenchWindowActionDelegate {
 						CompilationUnit compilationUnit = (CompilationUnit) astParser.createAST(null);						
 						compilationUnit.accept(astVisitor);				
 						compilationUnit.accept(new FirstASTVisitorToFindDuplicateMethods(target));
+						compilationUnit.accept(new SecondASTVisitorToFindDuplicateMethods(target));
+
 					}
 				}
 			} catch (JavaModelException e) {
