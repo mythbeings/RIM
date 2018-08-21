@@ -1,16 +1,22 @@
 package p.actions;
 
-import java.lang.reflect.Type;
+import java.util.List;
 import java.util.Set;
 
 import org.eclipse.jdt.core.dom.ASTVisitor;
 import org.eclipse.jdt.core.dom.MethodDeclaration;
+import org.eclipse.jdt.core.dom.SingleVariableDeclaration;
+import java.lang.reflect.Type;
 import org.eclipse.jdt.core.dom.TypeDeclaration;
 
 public class SecondASTVisitorToFindDuplicateMethods extends ASTVisitor {
-	/*
 	Set methodSet; // methodset has red duplicate methods collected at phase #1 above.
-					// is this true? Does something further need to occur to pass everything down?
+					// is this true? Seems like we're creating a new one in here. Does something further need to occur to pass everything down?
+	RMethod target= null;
+	
+	public SecondASTVisitorToFindDuplicateMethods(RMethod target) {
+		this.target = target;
+	}
 
 	public boolean visit(TypeDeclaration node) {
 		findDuplicate(node);
@@ -21,38 +27,36 @@ public class SecondASTVisitorToFindDuplicateMethods extends ASTVisitor {
 	void findDuplicate(TypeDeclaration node) {
 
 //traversing all parent classes
-		for (MethodDeclaration m : node.getMethods()) {
-			if (isDuplicateMethod(m, methodSet) == true)
-				methodSet.add(m);
-		}
+		isDuplicateMethod(node, methodSet);
+		if (node.getParent() != null) {
+			Type parent = (Type) node.getSuperclassType();
+			findDuplicate((TypeDeclaration) parent);
 
-		Type parent = node.getSuperclassType(); // Tried following info from link provided. Doesn't seem to work...
-		if (parent != null) {
-			findDuplicate(parent);
-
-			for (Type parent : node.superInterfaceTypes()) {
-				findDuplicate((TypeDeclaration) parent);
+			for (Object parent2 : node.superInterfaceTypes()) {
+				findDuplicate((TypeDeclaration) parent2);
 
 			}
 		}
 	}
 
-	private boolean isDuplicateMethod(MethodDeclaration m, Set methodSet) {
-// Is there a way to call rename to run this section?
-		if (m.getName().toString().compareTo("n") == 0) {
-			String[] parameterTypes = m.getParameterTypes(); // is there a better way for this part?
-			if (parameterTypes.length == 3) {
-				if (parameterTypes[0] == "String") {
-					if (parameterTypes[1] == "int") { // this reminds me: also need to modify rename (and this, should
-// rename not be usable here) to check for type conversion
-						if (parameterTypes[2] == "q.B") {
-							return true;
-						}
-					}
+	public Boolean isDuplicateMethod(TypeDeclaration node, Set methodSet2) {
+		MethodDeclaration[] methods = node.getMethods();
+		for(MethodDeclaration m : methods) {
+			if(m.getName().getIdentifier().compareTo(target.getName()) == 0) { 
+				List parameterList = m.parameters();
+				int i = 0;
+				for(String parameterType : target.getParameterTypes()) {				
+					SingleVariableDeclaration p = (SingleVariableDeclaration)parameterList.get(i);						
+					if(p.getType().resolveBinding().getQualifiedName().compareTo(parameterType) != 0)
+						break;
+					i++;
 				}
-			}
+				if(i == target.getParameterTypes().length) {
+					methodSet2.add(m);
+					return true;
+	}
+}
 		}
 		return false;
 	}
-	*/
 }
