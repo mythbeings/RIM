@@ -34,10 +34,19 @@ public class FirstASTVisitorToFindDuplicateMethods extends ASTVisitor {
 		
 		MethodDeclaration[] methods = type.getMethods();
 		for(MethodDeclaration m : methods) {
+			// Package print -- running into problems (code below retrieves package org.eclipse.jdt.core.dom)
+			System.out.println(m.getClass().getPackage()); 
+
+			// System.out.println(m);  // = easy way to get entirety of method (ex. public void m(String s,int i,q.B a){})
+			// Class print
+			System.out.println(type.getName().getIdentifier());  //prints class name
+			System.out.println(m.getName().getIdentifier() + " | " + target.getName()); //checks what both are
 			if(m.getName().getIdentifier().compareTo(target.getName()) == 0) { 
 				List parameterList = m.parameters();
 				int i = 0;
-				for(String parameterType : target.getParameterTypes()) {				
+				for(String parameterType : target.getParameterTypes()) {		
+					System.out.print((SingleVariableDeclaration)parameterList.get(i) + " "); //Test parameter types
+					
 					SingleVariableDeclaration p = (SingleVariableDeclaration)parameterList.get(i);						
 					if(p.getType().resolveBinding().getQualifiedName().compareTo(parameterType) != 0)
 						break;
@@ -46,18 +55,11 @@ public class FirstASTVisitorToFindDuplicateMethods extends ASTVisitor {
 				if(i == target.getParameterTypes().length) {						
 					//You found a method declaration with the same name and parameters of the target.
 					//done here...
+					System.out.println(type.getClass().getPackage()); //trying to find how to print package...
+					System.out.println(type.getName().getIdentifier());  //prints class name
 					
-					methodset.add(m);
+					methodset.add(m); //Errors start here
 					
-					//code from the email -- should it have its own method?
-					/*ITypeBinding[] passon = type.resolveBinding().getInterfaces();
-					for(ITypeBinding t : type.resolveBinding().getInterfaces()) {
-					            for(IMethodBinding n : t.getDeclaredMethods()) {
-					                n.getName();
-					                n.getParameterTypes();
-					            }
-					        }
-*/
 
 					collectAllduplicatemethodsInParents(type, methodset);
 				}
@@ -111,7 +113,8 @@ public class FirstASTVisitorToFindDuplicateMethods extends ASTVisitor {
 							i++;
 						}
 						if(i == target.getParameterTypes().length) {
-							System.out.print("***");//For the print test
+							System.out.println("Duplicate found in" + node.getName().getIdentifier());
+							System.out.println("Method " + n.getName() + "(" + parameterList + ")");//For the print test
 							methodset.add(n.getName());
 						}
 		                }
@@ -138,7 +141,8 @@ public class FirstASTVisitorToFindDuplicateMethods extends ASTVisitor {
 					i++;
 				}
 				if(i == target.getParameterTypes().length) {
-					System.out.print("***");//For the print test
+					System.out.println("Duplicate found in" + node.getName().getIdentifier());
+					System.out.println("Method " + m.getName() + "(" + parameterList + ")");//For the print test
 					methodSet2.add(m);
 					return true;
 	}

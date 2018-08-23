@@ -55,7 +55,8 @@ public class SecondASTVisitorToFindDuplicateMethods extends ASTVisitor {
 					i++;
 				}
 				if(i == target.getParameterTypes().length) {
-					System.out.print("***");//For the print test
+					System.out.println("Duplicate found in" + node.getName().getIdentifier());
+					System.out.println("Method " + m.getName() + "(" + parameterList + ")");//For the print test
 					methodSet2.add(m);
 					return true;
 	}
