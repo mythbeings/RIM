@@ -5,6 +5,7 @@ import java.lang.reflect.Modifier;
 import java.lang.reflect.Parameter;
 import java.lang.reflect.Type;
 import java.lang.reflect.TypeVariable;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
@@ -18,7 +19,7 @@ import org.eclipse.jdt.core.dom.TypeDeclaration;
 import org.w3c.dom.Node;
 
 public class FirstASTVisitorToFindDuplicateMethods extends ASTVisitor {
-	Set methodset;
+	public static Set<Object> methodset = new HashSet<Object>();
 
 	RMethod target= null;
 			
@@ -36,7 +37,7 @@ public class FirstASTVisitorToFindDuplicateMethods extends ASTVisitor {
 		for(MethodDeclaration m : methods) {
 			// Package print -- running into problems (code below retrieves package org.eclipse.jdt.core.dom)
 			System.out.println(m.getClass().getPackage()); 
-
+//.getqualifiedname
 			// System.out.println(m);  // = easy way to get entirety of method (ex. public void m(String s,int i,q.B a){})
 			// Class print
 			System.out.println(type.getName().getIdentifier());  //prints class name
@@ -58,10 +59,10 @@ public class FirstASTVisitorToFindDuplicateMethods extends ASTVisitor {
 					System.out.println(type.getClass().getPackage()); //trying to find how to print package...
 					System.out.println(type.getName().getIdentifier());  //prints class name
 					
-					methodset.add(m); //Errors start here
+					methodset.add(m); 
 					
-
-					collectAllduplicatemethodsInParents(type, methodset);
+System.out.println(type);
+					collectAllduplicatemethodsInParents(type);
 				}
 			}			
 		}
@@ -72,25 +73,32 @@ public class FirstASTVisitorToFindDuplicateMethods extends ASTVisitor {
 		return true;
 	}
 
-	void collectAllduplicatemethodsInParents(TypeDeclaration m, Set methodset) {
-		Interfacesearch(m, methodset);
-		Superclasssearch(m, methodset);
+	void collectAllduplicatemethodsInParents(TypeDeclaration m) {
+		if (m!=null) {
+		System.out.println(m + "*");
+		if (m.resolveBinding().getInterfaces() != null) {
+		Interfacesearch(m);}
+		else {
+			System.out.println("No Interfaces");
+		}
+		Superclasssearch(m);
+	}
 	}
 
-	void Superclasssearch(TypeDeclaration node, Set methodSet) {
+	void Superclasssearch(TypeDeclaration node) {
 
 		if (node.getParent() != null) {
 			
-			Boolean m = findDuplicateMethodPM(node, methodSet);
+			Boolean m = findDuplicateMethodPM(node);
 			if (m == true) {
-				methodSet.add(node);
+				methodset.add(node);
 			}
 			Type parent = (Type) node.getSuperclassType();
-			collectAllduplicatemethodsInParents((TypeDeclaration) parent, methodset);
+			collectAllduplicatemethodsInParents((TypeDeclaration) parent);
 		}
 	}
 
-	void Interfacesearch(TypeDeclaration node, Set methodSet) {
+	void Interfacesearch(TypeDeclaration node) {
 		
 	/*	For each interface in origin.getInterfaces()
 		RMethod m = findDuplicateMethod(interface)
@@ -98,6 +106,7 @@ public class FirstASTVisitorToFindDuplicateMethods extends ASTVisitor {
 		Interfacesearch(interface, methodSet) 	
 		*/	
 
+		//ITypeBinding[] passon = new ITypeBinding[];
 		ITypeBinding[] passon = node.resolveBinding().getInterfaces();
 		for(ITypeBinding t : node.resolveBinding().getInterfaces()) {
 		            for(IMethodBinding n : t.getDeclaredMethods()) {
@@ -120,13 +129,18 @@ public class FirstASTVisitorToFindDuplicateMethods extends ASTVisitor {
 		                }
 		            }
 		            TypeDeclaration next = (TypeDeclaration) t.getTypeDeclaration();
-					Interfacesearch(next, methodSet);
+					
+		            if (next.resolveBinding().getInterfaces() != null) {
+		        		Interfacesearch(next);}
+		        		else {
+		        			System.out.println("No Interfaces");
+		        		}
 		        }
 		 // can a class be turned into a methoddeclaration to fix this error?
 		}
 
 
-	public Boolean findDuplicateMethodPM(TypeDeclaration node, Set methodSet2) {
+	public Boolean findDuplicateMethodPM(TypeDeclaration node) {
 		MethodDeclaration[] methods = node.getMethods();
 		for(MethodDeclaration m : methods) {
 			System.out.println(m.getName());//For the print test
@@ -143,7 +157,7 @@ public class FirstASTVisitorToFindDuplicateMethods extends ASTVisitor {
 				if(i == target.getParameterTypes().length) {
 					System.out.println("Duplicate found in" + node.getName().getIdentifier());
 					System.out.println("Method " + m.getName() + "(" + parameterList + ")");//For the print test
-					methodSet2.add(m);
+					methodset.add(m);
 					return true;
 	}
 }
