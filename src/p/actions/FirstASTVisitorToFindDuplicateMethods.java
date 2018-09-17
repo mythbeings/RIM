@@ -59,8 +59,9 @@ public class FirstASTVisitorToFindDuplicateMethods extends ASTVisitor {
 					System.out.println(type.getClass().getPackage()); //trying to find how to print package...
 					System.out.println(type.getName().getIdentifier());  //prints class name
 					
-					methodset.add(m); 
-					
+					methodset.add(type.getName().getIdentifier()); 
+					System.out.println("Current Methodset contents: ");
+					System.out.println(methodset);
 System.out.println(type);
 					collectAllduplicatemethodsInParents(type);
 				}
@@ -91,8 +92,10 @@ System.out.println(type);
 			
 			Boolean m = findDuplicateMethodPM(node);
 			if (m == true) {
-				methodset.add(node);
+				methodset.add(node.getName().getIdentifier());
 			}
+			System.out.println("Current Methodset contents: ");
+			System.out.println(methodset);
 			Type parent = (Type) node.getSuperclassType();
 			collectAllduplicatemethodsInParents((TypeDeclaration) parent);
 		}
@@ -110,6 +113,7 @@ System.out.println(type);
 		ITypeBinding[] passon = node.resolveBinding().getInterfaces();
 		for(ITypeBinding t : node.resolveBinding().getInterfaces()) {
 		            for(IMethodBinding n : t.getDeclaredMethods()) {
+						
 		    			System.out.println(n.getName());//For the print test
 		                if (n.getName().compareTo(target.getName()) == 0);{
 		                ITypeBinding[] parameterList = n.getParameterTypes();
@@ -124,8 +128,10 @@ System.out.println(type);
 						if(i == target.getParameterTypes().length) {
 							System.out.println("Duplicate found in" + node.getName().getIdentifier());
 							System.out.println("Method " + n.getName() + "(" + parameterList + ")");//For the print test
-							methodset.add(n.getName());
+							methodset.add(node.getName().getIdentifier());
 						}
+						System.out.println("Current Methodset contents: ");
+						System.out.println(methodset);
 		                }
 		            }
 		            TypeDeclaration next = (TypeDeclaration) t.getTypeDeclaration();
@@ -157,7 +163,7 @@ System.out.println(type);
 				if(i == target.getParameterTypes().length) {
 					System.out.println("Duplicate found in" + node.getName().getIdentifier());
 					System.out.println("Method " + m.getName() + "(" + parameterList + ")");//For the print test
-					methodset.add(m);
+					methodset.add(node.getName().getIdentifier());
 					return true;
 	}
 }
