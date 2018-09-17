@@ -11,8 +11,7 @@ import java.lang.reflect.Type;
 import org.eclipse.jdt.core.dom.TypeDeclaration;
 
 public class SecondASTVisitorToFindDuplicateMethods extends ASTVisitor {
-	Set<Object> methodset = new HashSet<Object>(); // methodset has red duplicate methods collected at phase #1 above.
-					// is this true? Seems like we're creating a new one in here. Does something further need to occur to pass everything down?
+	
 	RMethod target= null;
 	
 	public SecondASTVisitorToFindDuplicateMethods(RMethod target) {
@@ -60,7 +59,7 @@ public class SecondASTVisitorToFindDuplicateMethods extends ASTVisitor {
 				if(i == target.getParameterTypes().length) {
 					System.out.println("Duplicate found in" + node.getName().getIdentifier());
 					System.out.println("Method " + m.getName() + "(" + parameterList + ")");//For the print test
-					methodset.add(m);
+					FirstASTVisitorToFindDuplicateMethods.methodset.add(node.getName().getIdentifier());
 					return true;
 	}
 }
