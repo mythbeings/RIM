@@ -5,6 +5,8 @@ import java.util.List;
 import java.util.Set;
 
 import org.eclipse.jdt.core.dom.ASTVisitor;
+import org.eclipse.jdt.core.dom.IMethodBinding;
+import org.eclipse.jdt.core.dom.ITypeBinding;
 import org.eclipse.jdt.core.dom.MethodDeclaration;
 import org.eclipse.jdt.core.dom.SingleVariableDeclaration;
 import java.lang.reflect.Type;
@@ -19,51 +21,60 @@ public class SecondASTVisitorToFindDuplicateMethods extends ASTVisitor {
 	}
 
 	public boolean visit(TypeDeclaration node) {
-		findDuplicate(node);
+		findDuplicate(node.resolveBinding());
 
 		
 		return true;
 	}
 
-	void findDuplicate(TypeDeclaration node) {
+	void findDuplicate(ITypeBinding node) {
 
 //traversing all parent classes
+		System.out.println("In second part now");
+		System.out.println("Current Methodset contents: ");
+		System.out.println(FirstASTVisitorToFindDuplicateMethods.methodset);
 		if (node != null) {
-		isDuplicateMethod(node);
-		if (node.getParent() != null) {
-			Type parent = (Type) node.getSuperclassType();
-			findDuplicate((TypeDeclaration) parent);
+		System.out.println(node.getQualifiedName());
+		findDuplicateMethodCM(node);
+		if (node.getSuperclass() != null) {
+			System.out.println("*  " + node.getSuperclass().getQualifiedName());
+			System.out.println("*  " + node.getPackage().getName());
+			ITypeBinding parent = node.getSuperclass();
+			findDuplicate(parent);
 
-			for (Object parent2 : node.superInterfaceTypes()) {
-				findDuplicate((TypeDeclaration) parent2);
+			for (ITypeBinding parent2 : node.getInterfaces()) {
+				findDuplicate(parent2);
 
 			}
 		}
 	}
 	}
 
-	public Boolean isDuplicateMethod(TypeDeclaration node) {
-		MethodDeclaration[] methods = node.getMethods();
-		for(MethodDeclaration m : methods) {
-			System.out.println(m.getName());//For the print test
-			if(m.getName().getIdentifier().compareTo(target.getName()) == 0) { 
-				List parameterList = m.parameters();
-				int i = 0;
-				for(String parameterType : target.getParameterTypes()) {
-					System.out.print(parameterType + " "); //For the print test
-					SingleVariableDeclaration p = (SingleVariableDeclaration)parameterList.get(i);						
-					if(p.getType().resolveBinding().getQualifiedName().compareTo(parameterType) != 0)
-						break;
-					i++;
+	public boolean findDuplicateMethodCM(ITypeBinding typeBinding) {
+		IMethodBinding[] methods = typeBinding.getDeclaredMethods();
+		for(IMethodBinding m : methods) {
+			//System.out.println(m.getName());//For the print test
+			if(m.getName().compareTo(target.getName()) == 0) {
+				if(m.getParameterTypes().length == target.getParameterTypes().length) {
+					int index = 0;
+					for(ITypeBinding p : m.getParameterTypes()) {						
+				//		System.out.print(p.getName() + " "); //For the print test						
+						if(p.getName().compareTo(target.getParameterType(index++)) != 0) {
+							return false;
+						}
+					}						
 				}
-				if(i == target.getParameterTypes().length) {
-					System.out.println("Duplicate found in" + node.getName().getIdentifier());
-					System.out.println("Method " + m.getName() + "(" + parameterList + ")");//For the print test
-					FirstASTVisitorToFindDuplicateMethods.methodset.add(node.getName().getIdentifier());
-					return true;
-	}
-}
+				
+				System.out.println("Duplicate found in" + typeBinding.getName());
+				System.out.println("Method " + m.getName() + "("); 
+				for(ITypeBinding p : m.getParameterTypes())
+					System.out.print(p.getQualifiedName() + ", ");						
+				System.out.println(")");//For the print test
+				FirstASTVisitorToFindDuplicateMethods.methodset.add(typeBinding.getName());
+				return true;
+			}
 		}
+		
 		return false;
 	}
 }

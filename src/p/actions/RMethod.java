@@ -61,6 +61,10 @@ public class RMethod {
 		return parameterTypes;
 	}
 	
+	public String getParameterType(int i) {
+		return parameterTypes[i];
+	}
+	
 	public void setStatic(boolean bStatic) {
 		this.bStatic = bStatic;
 	}
