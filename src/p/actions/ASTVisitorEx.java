@@ -32,46 +32,46 @@ public class ASTVisitorEx extends ASTVisitor {
 // Testing grounds 
 	public boolean visit(MethodDeclaration node) {
 		//Prints method name + contents
-		System.out.println(node + "*");
-		System.out.println();
+		//System.out.println(node + "*");
+		//System.out.println();
 			return true;
 		}
 	
 	public boolean visit(BlockComment node) {
 		//Research suggests it should print text enclosed in a block comment (*/ - /*). Cannot seem to make it work, however...
-		System.out.println(node);
-		System.out.println();
+		//System.out.println(node);
+		//System.out.println();
 			return true;
 		}
 	
 	
 	/*public boolean visit(Block node) {
 		//Prints contents of block, including the enveloping {}s 
-		System.out.println(node + "!");
-		System.out.println();
+		//System.out.println(node + "!");
+		//System.out.println();
 			return true;
 		}
 	
 	public boolean visit(MethodInvocation node) {
 		//Prints cases where a method is called (ex. a.m(1);)
-		System.out.println(node);
-		System.out.println();
+		//System.out.println(node);
+		//System.out.println();
 			return true;
 		}
 
 	public boolean visit(Assignment node) {
 		//Prints cases where a variable receives a new value (ex. v += 3)
-		System.out.println(node);
-		System.out.println();
+		//System.out.println(node);
+		//System.out.println();
 			return true;
 		}
 		
 	public boolean visit(FieldDeclaration node) {
 		//Prints field variables
-		System.out.println(node + "?");
-		System.out.println();
+		//System.out.println(node + "?");
+		//System.out.println();
 		//Prints root
-		System.out.println(node.getRoot());
+		//System.out.println(node.getRoot());
 			return true;
 		}*/
 }

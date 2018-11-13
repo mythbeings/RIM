@@ -27,8 +27,8 @@ public class ASTVisitor_MethodDeclaration extends ASTVisitor {
 
 	public boolean visit(MethodDeclaration node) {
 		
-		System.out.println("node.getName().getIdentifier(): " + node.getName().getIdentifier());
-		System.out.println("target.getName(): " + target.getName());
+		//System.out.println("node.getName().getIdentifier(): " + node.getName().getIdentifier());
+		//System.out.println("target.getName(): " + target.getName());
 		
 		//Collect ALL methods (name, parameter types) in the target program and store them in RMethod.allMethods
 		String[] parameterTypes = new String[node.parameters().size()];
@@ -40,46 +40,48 @@ public class ASTVisitor_MethodDeclaration extends ASTVisitor {
 		RMethod.allMethods.add(mth);
 		
 		if(node.getName().getIdentifier().compareTo(target.getName()) == 0) { 
-			List parameterList = node.parameters();
+			List<SingleVariableDeclaration> parameterList = node.parameters();
 			int i = 0;
-			for(String parameterType : target.getParameterTypes()) {				
-				SingleVariableDeclaration p = (SingleVariableDeclaration)parameterList.get(i);
-				
-				System.out.println("p.getType().resolveBinding().getQualifiedName(): " + p.getType().resolveBinding().getQualifiedName());
-				System.out.println("parameterType: " + parameterType);
-				
-				if(p.getType().resolveBinding().getQualifiedName().compareTo(parameterType) != 0)
-					break;
-				i++;
-			}
-			
-			if(i == target.getParameterTypes().length) {						
-				/*
-				//To reach HERE, you should have already found a method declaration with the same name and parameters of the target.
-				tested += target.namecounter(node);
-				System.out.println("tested: " + tested);
-				System.out.println("tester + \"|\" + tested: " + tester + "|" + tested);
-				if (tested == 1) {
-				tester++;
-				tested = 0;
+			if(target.getParameterTypes().length == parameterList.size()) {
+				for(String parameterType : target.getParameterTypes()) {				
+					SingleVariableDeclaration p = (SingleVariableDeclaration)parameterList.get(i);
+					
+					//System.out.println("p.getType().resolveBinding().getQualifiedName(): " + p.getType().resolveBinding().getQualifiedName());
+					//System.out.println("parameterType: " + parameterType);
+					
+					if(p.getType().resolveBinding().getQualifiedName().compareTo(parameterType) != 0)
+						break;
+					i++;
 				}
-				if (tester > 1) {
-					System.out.println("There are multiple methods with this name!");
+				
+				if(i == target.getParameterTypes().length) {						
+					/*
+					//To reach HERE, you should have already found a method declaration with the same name and parameters of the target.
+					tested += target.namecounter(node);
+					//System.out.println("tested: " + tested);
+					//System.out.println("tester + \"|\" + tested: " + tester + "|" + tested);
+					if (tested == 1) {
+					tester++;
+					tested = 0;
+					}
+					if (tester > 1) {
+						//System.out.println("There are multiple methods with this name!");
+						return false;
+					}
+					
+					//System.out.println("We found " + tester + " duplicate methods in this program.");
+					*/
+					target.setNative(Modifier.isNative(node.getModifiers()));
+					target.setStatic(Modifier.isStatic(node.getModifiers()));
+					
+					////System.out.println("node.isConstructor(): " + node.isConstructor());
+					target.setConstructor(node.isConstructor());
+								
+				}
+				else if (i < target.getParameterTypes().length) {
+					//System.out.println("Error: Method " + target.getName() +" doesn't satisfy the criteria.");
 					return false;
 				}
-				
-				System.out.println("We found " + tester + " duplicate methods in this program.");
-				*/
-				target.setNative(Modifier.isNative(node.getModifiers()));
-				target.setStatic(Modifier.isStatic(node.getModifiers()));
-				
-				//System.out.println("node.isConstructor(): " + node.isConstructor());
-				target.setConstructor(node.isConstructor());
-							
-			}
-			else if (i < target.getParameterTypes().length) {
-				System.out.println("Error: Method " + target.getName() +" doesn't satisfy the criteria.");
-				return false;
 			}
 		}
 		return true;

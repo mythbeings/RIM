@@ -113,21 +113,27 @@ public class RunAction implements IWorkbenchWindowActionDelegate {
 		parameterTypes[2] = "q.B";
 		RMethod target = new RMethod("m", parameterTypes);
 		
-		traverseAST("P", "p", "A.java", new ASTVisitor_MethodDeclaration(target), target);
+		traverseASTFirst("P", "p", "A.java", new ASTVisitor_MethodDeclaration(target), target);
+		traverseASTSecond("P", "p", "A.java", new ASTVisitor_MethodDeclaration(target), target);
+		
+		
 		//traverseAST("P", "p", "A.java", new ASTVisitor_CheckNative(target));		
 		//RMethod target2 = new RMethod("A1", parameterTypes);		
-		//traverseAST("P", "p", "A.java", new ASTVisitor_CheckCon(target));		
-		System.out.println(target.isStatic());
-		System.out.println(target.isNative());
-		System.out.println(target.isConstructor());
+		//traverseAST("P", "p", "A.java", new ASTVisitor_CheckCon(target));	
+		
+		/*
+		//System.out.println(target.isStatic());
+		//System.out.println(target.isNative());
+		//System.out.println(target.isConstructor());
+		*/
 		
 		
 		
+		//traverseAllASTs(target);
 		
-		traverseAllASTs(target);
 		
+		//target.rename("n");
 		
-		target.rename("n");
 		// 1. Check preconditions -- what are the preconditions?  Tackle one at a time.
 		//      1.1. static method cannot be renamed by rename-instance-method-refactoring.		
 		// 2. Make code changes -- rename all polymorphic methods
@@ -170,19 +176,21 @@ public class RunAction implements IWorkbenchWindowActionDelegate {
 		
 	}
 	
-	public void traverseAST(String projectName, String packageName, String compilationUnitName, ASTVisitor_MethodDeclaration astVisitor, RMethod target) {
+	public void traverseASTFirst(String projectName, String packageName, String compilationUnitName, ASTVisitor_MethodDeclaration astVisitor, RMethod target) {
 		IWorkspace iWorkspace = ResourcesPlugin.getWorkspace();
 		IWorkspaceRoot iWorkspaceRoot = iWorkspace.getRoot();
 		IProject[] iProjectList = iWorkspaceRoot.getProjects();
 		for (IProject iProject : iProjectList) {
 			IJavaProject iJavaProject = JavaCore.create(iProject);
 			
-			System.out.println("iJavaProject.getElementName(): " + iJavaProject.getElementName());
-			System.out.println("projectName: " + projectName);
+			////System.out.println("iJavaProject.getElementName(): " + iJavaProject.getElementName());
+			////System.out.println("projectName: " + projectName);
+			
 			
 			if(iJavaProject.getElementName().compareTo(projectName) != 0)
 				continue;
-
+			
+			
 			try {
 				IPackageFragment[] iPackageFragmentList = iJavaProject.getPackageFragments();
 				for (IPackageFragment iPackageFragment : iPackageFragmentList) {
@@ -191,22 +199,26 @@ public class RunAction implements IWorkbenchWindowActionDelegate {
 					}
 					
 					
-					System.out.println("iPackageFragment.getElementName(): " + iPackageFragment.getElementName());
-					System.out.println("packageName: " + packageName);
+					////System.out.println("iPackageFragment.getElementName(): " + iPackageFragment.getElementName());
+					////System.out.println("packageName: " + packageName);
 					astVisitor.target.setPackageName(packageName);
+					
 					
 					if(iPackageFragment.getElementName().compareTo(packageName) != 0)
 						continue;					
-
+					
+					
 					ICompilationUnit[] iCompilationUnitList = iPackageFragment.getCompilationUnits();
 					for (ICompilationUnit iCompilationUnit : iCompilationUnitList) {
 						
 						
-						System.out.println("iCompilationUnit.getElementName(): " + iCompilationUnit.getElementName());
-						System.out.println("typeName: " + compilationUnitName);
+						////System.out.println("iCompilationUnit.getElementName(): " + iCompilationUnit.getElementName());
+						////System.out.println("typeName: " + compilationUnitName);
 						
-						if(iCompilationUnit.getElementName().compareTo(compilationUnitName) != 0)
+						
+					if(iCompilationUnit.getElementName().compareTo(compilationUnitName) != 0)
 							continue;						
+						
 						
 						ICompilationUnit workingCopy = iCompilationUnit.getWorkingCopy(null);
 						ASTParser astParser = ASTParser.newParser(AST.JLS3);
@@ -214,8 +226,73 @@ public class RunAction implements IWorkbenchWindowActionDelegate {
 						//astParser.setSource(iCompilationUnit);
 						astParser.setSource(workingCopy);
 						CompilationUnit compilationUnit = (CompilationUnit) astParser.createAST(null);						
-						compilationUnit.accept(astVisitor);				
+						compilationUnit.accept(astVisitor);
+						
 						compilationUnit.accept(new FirstASTVisitorToFindDuplicateMethods(target));
+						//compilationUnit.accept(new SecondASTVisitorToFindDuplicateMethods(target));
+
+					}
+				}
+			} catch (JavaModelException e) {
+				e.printStackTrace();
+			}
+		}
+	}
+	
+
+	public void traverseASTSecond(String projectName, String packageName, String compilationUnitName, ASTVisitor_MethodDeclaration astVisitor, RMethod target) {
+		IWorkspace iWorkspace = ResourcesPlugin.getWorkspace();
+		IWorkspaceRoot iWorkspaceRoot = iWorkspace.getRoot();
+		IProject[] iProjectList = iWorkspaceRoot.getProjects();
+		for (IProject iProject : iProjectList) {
+			IJavaProject iJavaProject = JavaCore.create(iProject);
+			
+			////System.out.println("iJavaProject.getElementName(): " + iJavaProject.getElementName());
+			////System.out.println("projectName: " + projectName);
+			
+			/*
+			if(iJavaProject.getElementName().compareTo(projectName) != 0)
+				continue;
+			*/
+			
+			try {
+				IPackageFragment[] iPackageFragmentList = iJavaProject.getPackageFragments();
+				for (IPackageFragment iPackageFragment : iPackageFragmentList) {
+					if (iPackageFragment.getKind() != IPackageFragmentRoot.K_SOURCE) {
+						continue;
+					}
+					
+					
+					////System.out.println("iPackageFragment.getElementName(): " + iPackageFragment.getElementName());
+					////System.out.println("packageName: " + packageName);
+					astVisitor.target.setPackageName(packageName);
+					
+					/*
+					if(iPackageFragment.getElementName().compareTo(packageName) != 0)
+						continue;					
+					*/
+					
+					ICompilationUnit[] iCompilationUnitList = iPackageFragment.getCompilationUnits();
+					for (ICompilationUnit iCompilationUnit : iCompilationUnitList) {
+						
+						
+						////System.out.println("iCompilationUnit.getElementName(): " + iCompilationUnit.getElementName());
+						////System.out.println("typeName: " + compilationUnitName);
+						
+						/*
+						if(iCompilationUnit.getElementName().compareTo(compilationUnitName) != 0)
+							continue;						
+						*/
+						
+						ICompilationUnit workingCopy = iCompilationUnit.getWorkingCopy(null);
+						ASTParser astParser = ASTParser.newParser(AST.JLS3);
+						astParser.setResolveBindings(true);
+						//astParser.setSource(iCompilationUnit);
+						astParser.setSource(workingCopy);
+						CompilationUnit compilationUnit = (CompilationUnit) astParser.createAST(null);						
+						compilationUnit.accept(astVisitor);
+						
+						//compilationUnit.accept(new FirstASTVisitorToFindDuplicateMethods(target));
 						compilationUnit.accept(new SecondASTVisitorToFindDuplicateMethods(target));
 
 					}
