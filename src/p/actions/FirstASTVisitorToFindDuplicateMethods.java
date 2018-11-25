@@ -1,5 +1,6 @@
 package p.actions;
 
+import java.lang.reflect.Modifier;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -16,7 +17,7 @@ import org.w3c.dom.Node;
 
 public class FirstASTVisitorToFindDuplicateMethods extends ASTVisitor {
 	public static Set<Object> methodset = new HashSet<Object>();
-	RMethod target= null;
+	static RMethod target= null;
 			
 	public FirstASTVisitorToFindDuplicateMethods(RMethod target) {
 		this.target = target;
@@ -52,18 +53,23 @@ public class FirstASTVisitorToFindDuplicateMethods extends ASTVisitor {
 		return true;
 	}
 	
-	void collectAllduplicatemethodsInParents(ITypeBinding typeBinding) {
+	static void collectAllduplicatemethodsInParents(ITypeBinding typeBinding) {
 		if (typeBinding!=null) {
-			ITypeBinding[] interfaces = typeBinding.getInterfaces();
-			for(ITypeBinding i : interfaces) {
+			System.out.println(typeBinding.getName());
+			if (typeBinding.getInterfaces()!=null) {
+				System.out.print(typeBinding.getName());
+			}
+			System.out.print("|" + typeBinding.getName());
+			for(ITypeBinding i : typeBinding.getInterfaces()) {
+				System.out.println(i.getName() + "*");
 				searchInterface(i);
 			}
 			searchSuperClass(typeBinding);
 		}
 	}
 
-	void searchSuperClass(ITypeBinding typeBinding) {	
-		if (typeBinding.getSuperclass() != null) {
+	static void searchSuperClass(ITypeBinding typeBinding) {	
+	//	if (typeBinding.getSuperclass() != null) {
 			Boolean m = findDuplicateMethodPM(typeBinding);
 			if (m == true) {
 				methodset.add(typeBinding.getQualifiedName());
@@ -71,15 +77,20 @@ public class FirstASTVisitorToFindDuplicateMethods extends ASTVisitor {
 			ITypeBinding parent =  typeBinding.getSuperclass();
 			if(parent == null) {}
 			else {
+				System.out.println(parent.getName());
 				collectAllduplicatemethodsInParents(parent);
 			}			
-		}
+	//	}
 	}
 
-	void searchInterface(ITypeBinding typeBinding) {
+	static void searchInterface(ITypeBinding typeBinding) {
 		System.out.println(typeBinding.getName());
 		for(IMethodBinding m : typeBinding.getDeclaredMethods()) {		
 			if(m.getName().compareTo(target.getName()) == 0) {
+				if (Modifier.isPrivate(m.getModifiers())) {
+				//	System.out.println("this method is stealthy!");
+					break;
+				}
 				if(m.getParameterTypes().length == target.getParameterTypes().length) {
 					int index = 0, barrier = 0;
 					for(ITypeBinding p : m.getParameterTypes()) {						
@@ -110,11 +121,15 @@ public class FirstASTVisitorToFindDuplicateMethods extends ASTVisitor {
 		}
 
 
-	public boolean findDuplicateMethodPM(ITypeBinding typeBinding) {
+	public static boolean findDuplicateMethodPM(ITypeBinding typeBinding) {
 		IMethodBinding[] methods = typeBinding.getDeclaredMethods();
 		for(IMethodBinding m : methods) {
 	//	System.out.println(m.getName());//For the print test
 			if(m.getName().compareTo(target.getName()) == 0) {
+				if (Modifier.isPrivate(m.getModifiers())) {
+		//			System.out.println("this method is stealthy!");
+					return false;
+				}
 				if(m.getParameterTypes().length == target.getParameterTypes().length) {
 					int index = 0, barrier = 0;
 					for(ITypeBinding p : m.getParameterTypes()) {						
